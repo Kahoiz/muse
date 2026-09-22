@@ -3744,10 +3744,10 @@ isexe@^2.0.0:
   resolved "https://registry.npmjs.org/isexe/-/isexe-2.0.0.tgz#e8fbf374dc556ff8947a10dcb0572d633f2cfa10"
   integrity sha512-RHxMLp9lnKHGHRng9QFhRCMbYAcVpn69smSGcq3f36xjgVVWThj4qqLbTLlq7Ssj8B+fIQ1EuCEGI2lKsyQeIw==
 
-iso8601-duration@^2.1.2:
-  version "2.1.2"
-  resolved "https://registry.npmjs.org/iso8601-duration/-/iso8601-duration-2.1.2.tgz#b13f14068fe5890c91b91e1f74e474a49f355028"
-  integrity sha512-yXteYUiKv6x8seaDzyBwnZtPpmx766KfvQuaVNyPifYOjmPdOo3ajd4phDNa7Y5mTQGnXsNEcXFtVun1FjYXxQ==
+iso8601-duration@^2.1.4:
+  version "2.1.4"
+  resolved "https://registry.yarnpkg.com/iso8601-duration/-/iso8601-duration-2.1.4.tgz#23637078ce9fba0e944c1fdcc269a1227f27ba50"
+  integrity sha512-2TuWcuR6W0OhFZQDAY+jDUp9FC2fVTDgxTtbN0nFBfwmUA6HTqXc0wx2tIBVd/FhRp4CnJbDgCv3sCeTPMQbew==
 
 iterate-iterator@^1.0.1:
   version "1.0.2"
