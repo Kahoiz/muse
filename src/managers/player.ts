@@ -32,4 +32,16 @@ export default class {
 
     return player;
   }
+
+  /**
+   * Returns the player for a guild only if one has already been created.
+   * Unlike get(), this never instantiates a player as a side effect.
+   */
+  getExisting(guildId: string): Player | undefined {
+    return this.guildPlayers.get(guildId);
+  }
+
+  getAll(): Player[] {
+    return [...this.guildPlayers.values()];
+  }
 }

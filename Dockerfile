@@ -75,4 +75,7 @@ ENV COMMIT_HASH=$COMMIT_HASH
 ENV BUILD_DATE=$BUILD_DATE
 ENV ENV_FILE=/config
 
+# Only used when HTTP_API_ENABLED=true
+EXPOSE 8080
+
 CMD ["tini", "--", "node", "--enable-source-maps", "dist/scripts/migrate-and-start.js"]

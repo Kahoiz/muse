@@ -214,6 +214,10 @@ export default class {
     return this.positionInSeconds;
   }
 
+  getCurrentChannel(): VoiceChannel | undefined {
+    return this.currentChannel;
+  }
+
   async play(allowAgeRestrictedFallback = true): Promise<void> {
     const attempt = this.playbackAttempts.begin();
     await this.playWithAttempt(attempt, allowAgeRestrictedFallback);

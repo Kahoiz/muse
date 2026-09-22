@@ -1,0 +1,44 @@
+services:
+  muse:
+    # Built from this checkout so local source changes (e.g. the HTTP status
+    # API) are included. Rebuild with: docker compose up -d --build
+    build:
+      context: .
+    image: muse:local
+    container_name: muse
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      # Read-only status API (HTTP_API_ENABLED=true in .env), bound to
+      # loopback only — homepage reaches it over the media network below.
+      # Host 8080 is already taken by gluetun/qBittorrent.
+      - "127.0.0.1:8088:8080"
+    volumes:
+      - ./data:/data
+      # Optional: YouTube cookies for age-restricted videos.
+      # Mount OUTSIDE /data, and set YT_DLP_COOKIES_PATH in .env to match.
+      # - ./youtube-cookies.txt:/run/secrets/youtube-cookies.txt:ro
+    # Muse prints its invite URL on startup; view it with:
+    #   docker compose logs -f muse
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:8080/health').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - default
+      # So homepage (which shares tailscale-homepage's namespace on this
+      # network) can reach the status API at http://muse:8080
+      - media
+
+networks:
+  media:
+    name: jellyfin_media
+    external: true

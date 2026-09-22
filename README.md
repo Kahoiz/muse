@@ -181,3 +181,106 @@ Muse retries a stalled initial voice handshake up to three times, waiting up to 
 The failure message includes the last voice and network states. `OpeningWs` means the secure connection to the voice server did not open; check outbound TCP access to the **port supplied by Discord**, which is not necessarily 443. `UdpHandshaking` means the voice server was reached but UDP discovery did not finish; check outbound UDP and return traffic through the firewall/NAT. Discord describes both steps in its [voice connection documentation](https://docs.discord.com/developers/topics/voice-connections).
 
 Keep voice tokens, session IDs, encryption keys, and full protocol/debug payloads out of logs and bug reports. The network-state diagnostic reports only a state name.
+### HTTP status API
+
+Muse can expose a read-only HTTP endpoint with its current playback state, which is handy for dashboards like [Homepage](https://gethomepage.dev). It's disabled by default.
+
+- `HTTP_API_ENABLED`: set to `true` to start the server
+- `HTTP_API_PORT`: port to listen on (default `8080`)
+- `HTTP_API_HOST`: interface to bind to (default `0.0.0.0`)
+- `HTTP_API_TOKEN`: optional shared secret. When set, every endpoint except `/health` requires it, passed as `Authorization: Bearer <token>`, an `X-API-Key` header, or a `?token=` query parameter.
+
+The API is read-only — there is no way to control playback through it. If it fails to start (for example because the port is taken), Muse logs the error and keeps running as a normal bot.
+
+When running in Docker, publish the port in your `docker-compose.yml`:
+
+```yaml
+services:
+  muse:
+    ports:
+      - "8080:8080"
+```
+
+#### Endpoints
+
+| Endpoint | Description |
+| --- | --- |
+| `GET /health` | `{"status": "ok"}` once connected to Discord, `"starting"` before. Never requires a token, so it works as a container healthcheck. |
+| `GET /api/status` | Everything below in one response: bot info, a summary, the guilds currently playing, and all guilds. |
+| `GET /api/guilds` | Every guild Muse is in, with its playback state. |
+| `GET /api/guilds/:id` | A single guild by ID. |
+| `GET /api/now-playing` | Only the guilds that are currently playing. |
+
+Example `GET /api/status`:
+
+```json
+{
+  "bot": {"id": "123", "username": "Muse", "ready": true, "uptimeSeconds": 4512},
+  "summary": {
+    "guilds": 3,
+    "connected": 1,
+    "playing": 1,
+    "listeners": 4,
+    "queued": 12,
+    "nowPlaying": "Never Gonna Give You Up",
+    "nowPlayingIn": "My Server"
+  },
+  "playing": [
+    {
+      "id": "456",
+      "name": "My Server",
+      "status": "playing",
+      "connected": true,
+      "voiceChannel": {"id": "789", "name": "Music", "listeners": 4, "listenerNames": ["benni", "kasper"]},
+      "nowPlaying": {
+        "title": "Never Gonna Give You Up",
+        "artist": "Rick Astley",
+        "url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+        "source": "youtube",
+        "lengthSeconds": 213,
+        "positionSeconds": 42,
+        "isLive": false,
+        "thumbnailUrl": "https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg",
+        "requestedBy": "user-id",
+        "requestedByName": "benni",
+        "playlist": null
+      },
+      "queue": {"length": 12, "nextUp": {"title": "…"}, "items": [{"title": "…"}]},
+      "volume": 100,
+      "loop": {"song": false, "queue": false}
+    }
+  ],
+  "guilds": ["…same shape, including idle guilds…"]
+}
+```
+
+`status` is one of `playing`, `paused`, or `idle`. Guilds Muse isn't connected to report `idle` with a `null` `nowPlaying`.
+
+`listenerNames` and `requestedByName` come from Discord's member cache, which is populated for people in a voice channel; a requester who has since left is reported as `null`. `queue.items` holds the upcoming songs, capped at 25 entries — `queue.length` is always the true total.
+
+#### Homepage widget example
+
+One row per server Muse is playing in, with the song on the left and the server on the right:
+
+```yaml
+- Muse:
+    icon: mdi-music-circle
+    description: Discord music bot
+    widget:
+      type: customapi
+      url: http://muse:8080/api/status
+      # Only needed if HTTP_API_TOKEN is set:
+      # headers:
+      #   Authorization: Bearer your-token-here
+      display: dynamic-list
+      mappings:
+        items: playing
+        name: nowPlaying.title
+        label: name
+```
+
+Homepage's rows hold two cells, so the listener names and the queue need a
+little custom JavaScript in Homepage's `custom.js` if you want them on the
+card — fetch the same endpoint through Homepage's own proxy
+(`/api/services/proxy?group=<group>&service=Muse`) and render it however you
+like.
