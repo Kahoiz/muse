@@ -119,6 +119,8 @@ export const buildStatusPayload = (client: Client, playerManager: PlayerManager)
     bot: {
       id: client.user?.id ?? null,
       username: client.user?.username ?? null,
+      // The bot's own Discord avatar, so a dashboard can use it as the icon.
+      avatarUrl: client.user?.displayAvatarURL({size: 128}) ?? null,
       ready: client.isReady(),
       uptimeSeconds: client.uptime === null ? null : Math.floor(client.uptime / 1000),
     },

@@ -215,7 +215,7 @@ Example `GET /api/status`:
 
 ```json
 {
-  "bot": {"id": "123", "username": "Muse", "ready": true, "uptimeSeconds": 4512},
+  "bot": {"id": "123", "username": "Muse", "avatarUrl": "https://cdn.discordapp.com/avatars/123/abc.webp?size=128", "ready": true, "uptimeSeconds": 4512},
   "summary": {
     "guilds": 3,
     "connected": 1,

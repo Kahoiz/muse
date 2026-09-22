@@ -68,7 +68,7 @@ const makeApi = ({token = '', players = new Map<string, Player>()} = {}) => {
   } as unknown as Config;
 
   const client = {
-    user: {id: 'bot-id', username: 'Muse'},
+    user: {id: 'bot-id', username: 'Muse', displayAvatarURL: () => 'https://cdn.discordapp.com/avatars/bot-id/hash.webp?size=128'},
     isReady: () => true,
     uptime: 60_000,
     guilds: {
@@ -112,7 +112,13 @@ describe('HTTP API', () => {
     const body = await response.json() as any;
 
     expect(response.status).toBe(200);
-    expect(body.bot).toMatchObject({id: 'bot-id', username: 'Muse', ready: true, uptimeSeconds: 60});
+    expect(body.bot).toMatchObject({
+      id: 'bot-id',
+      username: 'Muse',
+      avatarUrl: 'https://cdn.discordapp.com/avatars/bot-id/hash.webp?size=128',
+      ready: true,
+      uptimeSeconds: 60,
+    });
     expect(body.summary).toMatchObject({guilds: 2, connected: 1, playing: 1, listeners: 2, queued: 2});
     expect(body.summary.nowPlaying).toBe('Never Gonna Give You Up');
     expect(body.summary.nowPlayingIn).toBe('Alpha');
